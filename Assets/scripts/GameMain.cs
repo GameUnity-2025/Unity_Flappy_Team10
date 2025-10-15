@@ -10,6 +10,7 @@ public class GameMain : MonoBehaviour
     public GameObject tipPic;
     public GameObject scoreMgr;
     public GameObject pipeSpawner;
+    public GameObject gameoverPic;
 
 
     private bool gameStarted = false;
@@ -42,4 +43,13 @@ public class GameMain : MonoBehaviour
         scoreMgr.GetComponent<ScoreMgr>().SetScore(0);
         pipeSpawner.GetComponent<PipeSpawner>().StartSpawning();
     }
+    public void GameOver()
+    {
+        // Hiện ảnh Game Over
+        gameoverPic.GetComponent<SpriteRenderer>().enabled = true;
+
+        // Ẩn điểm số và dừng ống bay (nếu muốn)
+        pipeSpawner.GetComponent<PipeSpawner>().GameOver();
+    }
+
 }

@@ -5,6 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class StartMain : MonoBehaviour
 {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 264eee5 (Create Panel GameOver)
     public GameObject bird;
     public GameObject land;
     public GameObject back_ground;
@@ -12,11 +16,29 @@ public class StartMain : MonoBehaviour
 
     private GameObject nowPressBtn = null;
 
+<<<<<<< HEAD
     void Start()
     {
         // random background
         int index = Random.Range(0, back_list.Length);
         if (back_ground != null && back_list != null && back_list.Length > 0)
+=======
+    // Use this for initialization
+    void Start()
+    {
+
+        // random background
+        int index = Random.Range(0, back_list.Length);
+        back_ground.GetComponent<SpriteRenderer>().sprite = back_list[index];
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Handle native touch events
+        foreach (Touch touch in Input.touches)
+>>>>>>> 264eee5 (Create Panel GameOver)
         {
             var sr = back_ground.GetComponent<SpriteRenderer>();
             if (sr) sr.sprite = back_list[index];
@@ -46,6 +68,12 @@ public class StartMain : MonoBehaviour
         switch (touchPhase)
         {
             case TouchPhase.Began:
+<<<<<<< HEAD
+=======
+                print(touchPosition);
+                print(worldPos);
+
+>>>>>>> 264eee5 (Create Panel GameOver)
                 foreach (Collider2D c in Physics2D.OverlapPointAll(worldPos))
                 {
                     string n = c.gameObject.name;
@@ -72,6 +100,11 @@ public class StartMain : MonoBehaviour
                     }
                     nowPressBtn = null;
                 }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 264eee5 (Create Panel GameOver)
                 break;
         }
     }
