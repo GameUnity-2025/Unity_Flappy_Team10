@@ -2,7 +2,8 @@
 using System.Collections;
 using DG.Tweening;
 
-public class StartMain : MonoBehaviour {
+public class StartMain : MonoBehaviour
+{
 
     public GameObject bird;
     public GameObject land;
@@ -12,16 +13,18 @@ public class StartMain : MonoBehaviour {
     private GameObject nowPressBtn = null;
 
     // Use this for initialization
-    void Start () {      
+    void Start()
+    {
 
         // random background
         int index = Random.Range(0, back_list.Length);
         back_ground.GetComponent<SpriteRenderer>().sprite = back_list[index];
 
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         // Handle native touch events
         foreach (Touch touch in Input.touches)
         {
@@ -56,7 +59,7 @@ public class StartMain : MonoBehaviour {
                 print(touchPosition);
                 print(worldPos);
 
-                foreach(Collider2D c in Physics2D.OverlapPointAll(worldPos))
+                foreach (Collider2D c in Physics2D.OverlapPointAll(worldPos))
                 {
                     name = c.gameObject.name;
                     print(name);
@@ -92,7 +95,7 @@ public class StartMain : MonoBehaviour {
                     nowPressBtn = null;
                 }
 
-                
+
                 break;
         }
     }

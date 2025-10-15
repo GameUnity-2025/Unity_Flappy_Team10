@@ -2,23 +2,27 @@
 using System.Collections;
 using DG.Tweening;
 
-public class GameMain : MonoBehaviour {
+public class GameMain : MonoBehaviour
+{
 
     public GameObject bird;
     public GameObject readyPic;
     public GameObject tipPic;
     public GameObject scoreMgr;
     public GameObject pipeSpawner;
+    public GameObject gameoverPic;
 
     private bool gameStarted = false;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    // Use this for initialization
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         if (!gameStarted && Input.GetButtonDown("Fire1"))
         {
             gameStarted = true;
@@ -38,4 +42,13 @@ public class GameMain : MonoBehaviour {
         scoreMgr.GetComponent<ScoreMgr>().SetScore(0);
         pipeSpawner.GetComponent<PipeSpawner>().StartSpawning();
     }
+    public void GameOver()
+    {
+        // Hiện ảnh Game Over
+        gameoverPic.GetComponent<SpriteRenderer>().enabled = true;
+
+        // Ẩn điểm số và dừng ống bay (nếu muốn)
+        pipeSpawner.GetComponent<PipeSpawner>().GameOver();
+    }
+
 }
