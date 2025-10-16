@@ -10,7 +10,7 @@ public class GameMain : MonoBehaviour
     public GameObject tipPic;
     public GameObject scoreMgr;
     public GameObject pipeSpawner;
-    public GameObject gameoverPic;
+    //   public GameObject gameoverPic;
 
     private bool gameStarted = false;
 
@@ -23,14 +23,11 @@ public class GameMain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!gameStarted && Input.GetButtonDown("Fire1"))
-        {
-            gameStarted = true;
-            StartGame();
-        }
+        // Không xử lý input ở đây nữa - để BirdControl xử lý
     }
 
-    private void StartGame()
+
+    public void StartGame()
     {
         BirdControl control = bird.GetComponent<BirdControl>();
         control.inGame = true;
@@ -39,16 +36,38 @@ public class GameMain : MonoBehaviour
         readyPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
         tipPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
 
-        scoreMgr.GetComponent<ScoreMgr>().SetScore(0);
         pipeSpawner.GetComponent<PipeSpawner>().StartSpawning();
+    }
+    
+    public void HideUI()
+    {
+        if (readyPic != null)
+            readyPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
+        if (tipPic != null)
+            tipPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
     }
     public void GameOver()
     {
         // Hiện ảnh Game Over
-        gameoverPic.GetComponent<SpriteRenderer>().enabled = true;
+        //  gameoverPic.GetComponent<SpriteRenderer>().enabled = true;
 
         // Ẩn điểm số và dừng ống bay (nếu muốn)
         pipeSpawner.GetComponent<PipeSpawner>().GameOver();
+    }
+    
+    public void RestartGame()
+    {
+        gameStarted = false;
+        
+        // Hiện lại readyPic và tipPic
+        if (readyPic != null)
+        {
+            readyPic.GetComponent<SpriteRenderer>().material.DOFade(1f, 0.2f);
+        }
+        if (tipPic != null)
+        {
+            tipPic.GetComponent<SpriteRenderer>().material.DOFade(1f, 0.2f);
+        }
     }
 
 }
