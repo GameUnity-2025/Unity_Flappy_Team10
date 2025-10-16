@@ -3,7 +3,10 @@ using System.Collections;
 
 public class ScoreMgr : MonoBehaviour
 {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
 	public GameObject[] scorePrefabs;
 	public float digitOffset;
 
@@ -11,6 +14,7 @@ public class ScoreMgr : MonoBehaviour
 	private int nowScore = 0;
 
 	void Start()
+<<<<<<< HEAD
 	{
 		nowScore = 0;
 		SetScore(nowScore);
@@ -28,7 +32,29 @@ public class ScoreMgr : MonoBehaviour
 	}
 
 	public void SetScore(int score)
+=======
+>>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
 	{
+		nowScore = 0;
+		SetScore(nowScore);
+	}
+
+	public void AddScore()
+	{
+		nowScore++;
+		SetScore(nowScore);
+	}
+
+	// Thêm hàm này để lấy điểm hiện tại
+	public int GetCurrentScore()
+	{
+		return nowScore;
+	}
+
+	public void SetScore(int score)
+	{
+		nowScore = score; // Lưu điểm hiện tại
+
 		int tmpScore = score;
 		int[] digits = new int[5];
 		int index = 0;
@@ -59,9 +85,14 @@ public class ScoreMgr : MonoBehaviour
 			}
 
 			float nowX = transform.position.x + nowOffset;
+<<<<<<< HEAD
 
 			Vector2 pos = new Vector2(nowX, transform.position.y);
 
+=======
+			Vector2 pos = new Vector2(nowX, transform.position.y);
+
+>>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
 			nowShowScores[i] = Instantiate(scorePrefabs[digits[i]], pos, transform.rotation) as GameObject;
 			nowOffset -= digitOffset;
 		}
