@@ -12,9 +12,9 @@ public class LeaderboardUI : MonoBehaviour
     public TextMeshProUGUI[] scoreTexts;
 
     [Header("Nút quay lại và màn hình chính")]
-    public Button backButton;             // 🟢 Nút Back
-    public GameObject leaderboardPanel;   // 🟢 Panel hiện tại (Top Scores)
-    public GameObject mainMenuPanel;      // 🟢 Panel menu chính
+    public Button backButton;            
+    public GameObject leaderboardPanel;   
+    public GameObject mainMenuPanel;      
 
     private void OnEnable()
     {
