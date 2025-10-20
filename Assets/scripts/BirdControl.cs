@@ -4,73 +4,66 @@ using DG.Tweening;
 
 public class BirdControl : MonoBehaviour
 {
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-    public int rotateRate = 3;
-=======
-    public int rotateRate = 10;
->>>>>>> 264eee5 (Create Panel GameOver)
-    public float upSpeed = 10;
-=======
+    [Header("Movement")]
     public int rotateRate = 6;
     public float upSpeed = 2.5f;
-    public float gravity = 0.45f; // 🔹 Giảm trọng lực xuống
->>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
-    public GameObject scoreMgr;
-    public GameObject gameOverPanel;
+    public float gravity = 0.45f; // giảm trọng lực
 
+    [Header("Refs")]
+    public GameObject scoreMgr;
+    public GameObject gameOverPanel;   // GameObject có component GameOverPanel
+    public GameObject pipeSpawner;
+
+    [Header("SFX")]
     public AudioClip jumpUp;
     public AudioClip hit;
     public AudioClip score;
-    //public GameObject gameoverPic;
-    public GameObject pipeSpawner;
-    public GameObject gameOverPanel;
 
+    [Header("State")]
     public bool inGame = false;
 
     private bool dead = false;
     private bool landed = false;
     private Sequence birdSequence;
     private Vector3 startPos;
-
+    private Rigidbody2D rb;
 
     void Start()
     {
         startPos = transform.position;
 
-        // DOTween nhảy nhẹ
+        // DOTween nhảy nhẹ ở màn chờ
         float birdOffset = 0.05f;
         float birdTime = 0.3f;
         float birdStartY = transform.position.y;
 
         birdSequence = DOTween.Sequence();
         birdSequence.Append(transform.DOMoveY(birdStartY + birdOffset, birdTime).SetEase(Ease.Linear))
-            .Append(transform.DOMoveY(birdStartY - 2 * birdOffset, 2 * birdTime).SetEase(Ease.Linear))
-            .Append(transform.DOMoveY(birdStartY, birdTime).SetEase(Ease.Linear))
-            .SetLoops(-1);
+                    .Append(transform.DOMoveY(birdStartY - 2 * birdOffset, 2 * birdTime).SetEase(Ease.Linear))
+                    .Append(transform.DOMoveY(birdStartY, birdTime).SetEase(Ease.Linear))
+                    .SetLoops(-1);
 
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0f; // gravity tắt lúc chờ
-        rb.velocity = Vector2.zero;
+        rb = GetComponent<Rigidbody2D>();
         rb.simulated = true;
+        rb.gravityScale = 0f;      // chưa vào game thì tắt gravity
+        rb.velocity = Vector2.zero;
 
-        // Set các giá trị chuẩn
+        // Giá trị chuẩn
         upSpeed = 2.4f;
         gravity = 0.45f;
         rotateRate = 6;
     }
+
     public void RestartBird()
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-
         // Reset vị trí và xoay chim
         transform.position = startPos;
         transform.rotation = Quaternion.identity;
 
         // Reset Rigidbody
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
         rb.velocity = Vector2.zero;
-        rb.gravityScale = 0f; // gravity tắt lúc chờ chơi
+        rb.gravityScale = 0f; // chờ chơi
 
         // Reset trạng thái
         dead = false;
@@ -79,37 +72,54 @@ public class BirdControl : MonoBehaviour
 
         // Bật lại animation nhảy nhẹ
         if (birdSequence != null)
-            birdSequence.Restart();
-    }
+        {
+            if (!birdSequence.IsActive()) // nếu sequence bị Kill
+            {
+                float birdOffset = 0.05f;
+                float birdTime = 0.3f;
+                float birdStartY = transform.position.y;
 
+                birdSequence = DOTween.Sequence();
+                birdSequence.Append(transform.DOMoveY(birdStartY + birdOffset, birdTime).SetEase(Ease.Linear))
+                            .Append(transform.DOMoveY(birdStartY - 2 * birdOffset, 2 * birdTime).SetEase(Ease.Linear))
+                            .Append(transform.DOMoveY(birdStartY, birdTime).SetEase(Ease.Linear))
+                            .SetLoops(-1);
+            }
+            else
+            {
+                birdSequence.Restart();
+            }
+        }
+    }
 
     void Update()
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
 
+        // Chưa vào game: click để bắt đầu
         if (!inGame)
         {
             if (Input.GetButtonDown("Fire1"))
             {
                 inGame = true;
-                rb.gravityScale = gravity; // bật gravity
-                birdSequence.Kill(); // dừng animation nhảy nhẹ
+                rb.gravityScale = gravity;   // bật gravity
+                if (birdSequence != null) birdSequence.Kill(); // dừng animation nhảy nhẹ
                 JumpUp();
-                
+
                 // Kích hoạt pipe spawner
                 if (pipeSpawner != null)
                 {
-                    pipeSpawner.GetComponent<PipeSpawner>().StartSpawning();
+                    var spawner = pipeSpawner.GetComponent<PipeSpawner>();
+                    if (spawner != null) spawner.StartSpawning();
                 }
-                
-                // Ẩn readyPic và tipPic
+
+                // Ẩn ready/tips nếu có
                 GameObject gameMain = GameObject.Find("GameMain");
                 if (gameMain != null)
                 {
                     GameMain gameMainScript = gameMain.GetComponent<GameMain>();
                     if (gameMainScript != null)
                     {
-                        // Gọi hàm HideUI để ẩn UI
                         gameMainScript.HideUI();
                     }
                 }
@@ -117,29 +127,17 @@ public class BirdControl : MonoBehaviour
             return;
         }
 
-        if (!dead && Input.GetButtonDown("Fire1"))
+        // Trong game: click để nhảy
+        if (!dead && (Input.GetButtonDown("Fire1")))
         {
             JumpUp();
         }
 
-        // Xoay chim
+        // Xoay chim theo vận tốc
         if (!landed)
         {
-<<<<<<< HEAD
-            float v = transform.GetComponent<Rigidbody2D>().velocity.y;
-
-<<<<<<< HEAD
-            float rotate = Mathf.Clamp(v * 2f, -45f, 10f);
-
-
-=======
-            float rotate = Mathf.Min(Mathf.Max(-90, v * rotateRate + 60), 30);
->>>>>>> 264eee5 (Create Panel GameOver)
-
-=======
             float v = rb.velocity.y;
             float rotate = Mathf.Min(Mathf.Max(-90, v * rotateRate + 60), 30);
->>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
             transform.rotation = Quaternion.Euler(0f, 0f, rotate);
         }
         else
@@ -150,104 +148,127 @@ public class BirdControl : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-<<<<<<< HEAD
-        // 🚫 Bỏ qua va chạm khi game chưa bắt đầu
-        if (!inGame) return;
-
-=======
->>>>>>> 264eee5 (Create Panel GameOver)
+        // Va chạm vật cản/đất -> die
         if (other.name == "land" || other.name == "pipe_up" || other.name == "pipe_down")
         {
             if (!dead)
             {
-                // Gửi GameOver tới các vật thể di chuyển
+                // Báo tất cả vật thể có tag "movable" dừng lại
                 GameObject[] objs = GameObject.FindGameObjectsWithTag("movable");
                 foreach (GameObject g in objs)
                 {
                     g.BroadcastMessage("GameOver", SendMessageOptions.DontRequireReceiver);
                 }
 
-                // Gọi GameOver
+                // Animation + âm thanh
+                var anim = GetComponent<Animator>();
+                if (anim) anim.SetTrigger("die");
+                if (hit) AudioSource.PlayClipAtPoint(hit, Vector3.zero);
+
+                // Gọi GameOver (một lần)
                 GameOver();
+            }
 
-                // Animation và âm thanh
-                GetComponent<Animator>().SetTrigger("die");
-                AudioSource.PlayClipAtPoint(hit, Vector3.zero);
+            if (other.name == "land")
+            {
+                // dừng ngay khi chạm đất
+                if (rb == null) rb = GetComponent<Rigidbody2D>();
+                rb.gravityScale = 0f;
+                rb.velocity = Vector2.zero;
 
-                // Hiện panel Game Over sau 1 giây
+                landed = true;
+
+                // Hiển thị Game Over Panel sau một khoảng delay nhỏ (real-time)
                 StartCoroutine(ShowGameOverDelay());
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 264eee5 (Create Panel GameOver)
-            if (other.name == "land")
-            {
-                transform.GetComponent<Rigidbody2D>().gravityScale = 0;
-                transform.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
-<<<<<<< HEAD
-=======
-
->>>>>>> 264eee5 (Create Panel GameOver)
-=======
-            if (other.name == "land")
-            {
-                GetComponent<Rigidbody2D>().gravityScale = 0;
-                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
->>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
-                landed = true;
-            }
+            return;
         }
 
-        if (other.name == "pass_trigger")
+        // Qua điểm
+        if (other.name == "pass_trigger" || other.CompareTag("Score"))
         {
-            scoreMgr.GetComponent<ScoreMgr>().AddScore();
-            AudioSource.PlayClipAtPoint(score, Vector3.zero);
+            if (scoreMgr != null)
+            {
+                var sm = scoreMgr.GetComponent<ScoreMgr>();
+                if (sm != null) sm.AddScore();
+            }
+            if (score) AudioSource.PlayClipAtPoint(score, Vector3.zero);
+            return;
         }
-<<<<<<< HEAD
     }
 
     IEnumerator ShowGameOverDelay()
     {
-        yield return new WaitForSeconds(1f);
+        // dùng realtime để không phụ thuộc timeScale
+        yield return new WaitForSecondsRealtime(1f);
 
-<<<<<<< HEAD
         if (gameOverPanel != null)
         {
-            int currentScore = scoreMgr.GetComponent<ScoreMgr>().GetCurrentScore();
-            gameOverPanel.GetComponent<GameOverPanel>().ShowGameOver(currentScore);
+            int currentScore = 0;
+            if (scoreMgr != null)
+            {
+                var sm = scoreMgr.GetComponent<ScoreMgr>();
+                if (sm != null) currentScore = sm.GetCurrentScore();
+            }
+
+            var panel = gameOverPanel.GetComponent<GameOverPanel>();
+            if (panel != null)
+            {
+                panel.ShowGameOver(currentScore);
+            }
+            else
+            {
+                Debug.LogWarning("GameOverPanel component not found on gameOverPanel object.");
+            }
         }
-=======
->>>>>>> 264eee5 (Create Panel GameOver)
-=======
->>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)
+        else
+        {
+            Debug.LogWarning("⚠️ gameOverPanel chưa được gán trong BirdControl!");
+        }
     }
 
     public void JumpUp()
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        rb.velocity = new Vector2(0, upSpeed); // dùng velocity trực tiếp
-        AudioSource.PlayClipAtPoint(jumpUp, Vector3.zero);
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
+        rb.velocity = new Vector2(0f, upSpeed); // set velocity trực tiếp
+        if (jumpUp) AudioSource.PlayClipAtPoint(jumpUp, Vector3.zero);
     }
-
 
     public void GameOver()
     {
+        if (dead) return; // chống gọi lặp
         dead = true;
-<<<<<<< HEAD
-    }
-}
-=======
 
         // Dừng ống bay
         if (pipeSpawner != null)
-            pipeSpawner.GetComponent<PipeSpawner>().GameOver();
+        {
+            var spawner = pipeSpawner.GetComponent<PipeSpawner>();
+            if (spawner != null) spawner.GameOver();
+        }
 
-        // Hiển thị Game Over Panel với điểm số sau 1 giây
+        // Ghi điểm vào Leaderboard nếu có
+        try
+        {
+            int finalScore = 0;
+            if (scoreMgr != null)
+            {
+                var sm = scoreMgr.GetComponent<ScoreMgr>();
+                if (sm != null) finalScore = sm.GetCurrentScore();
+            }
+
+            var lb = FindObjectOfType<LeaderboardMgr>();
+            if (lb != null)
+            {
+                lb.AddScore("Player", finalScore);
+
+                var ui = FindObjectOfType<LeaderboardUI>();
+                if (ui != null) ui.ForceUpdate();
+            }
+        }
+        catch { /* bỏ qua nếu không có hệ leaderboard */ }
+
+        // Hiện panel sau 1s (real-time)
         StartCoroutine(ShowGameOverPanelDelayed());
     }
 
@@ -255,13 +276,24 @@ public class BirdControl : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(1f);
 
-<<<<<<< HEAD
->>>>>>> 264eee5 (Create Panel GameOver)
-=======
         if (gameOverPanel != null)
         {
-            int currentScore = scoreMgr.GetComponent<ScoreMgr>().GetCurrentScore();
-            gameOverPanel.GetComponent<GameOverPanel>().ShowGameOver(currentScore);
+            int currentScore = 0;
+            if (scoreMgr != null)
+            {
+                var sm = scoreMgr.GetComponent<ScoreMgr>();
+                if (sm != null) currentScore = sm.GetCurrentScore();
+            }
+
+            var panel = gameOverPanel.GetComponent<GameOverPanel>();
+            if (panel != null)
+            {
+                panel.ShowGameOver(currentScore);
+            }
+            else
+            {
+                Debug.LogWarning("GameOverPanel component not found on gameOverPanel object.");
+            }
         }
         else
         {
@@ -269,4 +301,3 @@ public class BirdControl : MonoBehaviour
         }
     }
 }
->>>>>>> 25e8c24 (khi chết bấm nút play trên panel quay lại trang chơi ban đầu , ghi nhận được điểm)

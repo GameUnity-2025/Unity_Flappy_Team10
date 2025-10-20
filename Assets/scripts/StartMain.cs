@@ -1,57 +1,52 @@
 ﻿using UnityEngine;
-using System.Collections;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
 
 public class StartMain : MonoBehaviour
 {
-<<<<<<< HEAD
-=======
-
->>>>>>> 264eee5 (Create Panel GameOver)
+    [Header("Scene Refs")]
     public GameObject bird;
     public GameObject land;
     public GameObject back_ground;
+
+    [Header("Backgrounds")]
     public Sprite[] back_list;
 
     private GameObject nowPressBtn = null;
 
-<<<<<<< HEAD
     void Start()
     {
-        // random background
-        int index = Random.Range(0, back_list.Length);
+        // Random background an toàn (có kiểm tra null/length)
         if (back_ground != null && back_list != null && back_list.Length > 0)
-=======
-    // Use this for initialization
-    void Start()
-    {
-
-        // random background
-        int index = Random.Range(0, back_list.Length);
-        back_ground.GetComponent<SpriteRenderer>().sprite = back_list[index];
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // Handle native touch events
-        foreach (Touch touch in Input.touches)
->>>>>>> 264eee5 (Create Panel GameOver)
         {
+            int index = Random.Range(0, back_list.Length);
             var sr = back_ground.GetComponent<SpriteRenderer>();
-            if (sr) sr.sprite = back_list[index];
+            if (sr != null) sr.sprite = back_list[index];
+        }
+
+        // Cập nhật leaderboard nếu có UI trong scene
+        var lbUI = FindObjectOfType<LeaderboardUI>();
+        if (lbUI != null)
+        {
+            // Nếu script có hàm UpdateLeaderboardUI() / ForceUpdate() thì gọi cho chắc:
+            try
+            {
+                lbUI.ForceUpdate();
+            }
+            catch
+            {
+                try { lbUI.UpdateLeaderboardUI(); } catch { /* bỏ qua nếu không có */ }
+            }
         }
     }
 
     void Update()
     {
-        // Touch
+        // Xử lý touch thật
         foreach (Touch touch in Input.touches)
             HandleTouch(touch.fingerId, touch.position, touch.phase);
 
-        // Mouse giả lập touch
+        // Giả lập touch bằng chuột khi chạy trên PC
         if (Input.touchCount == 0)
         {
             if (Input.GetMouseButtonDown(0)) HandleTouch(10, Input.mousePosition, TouchPhase.Began);
@@ -62,23 +57,21 @@ public class StartMain : MonoBehaviour
 
     private void HandleTouch(int touchFingerId, Vector2 touchPosition, TouchPhase touchPhase)
     {
-        Vector3 wp = Camera.main.ScreenToWorldPoint(touchPosition);
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 wp = cam.ScreenToWorldPoint(touchPosition);
         Vector2 worldPos = new Vector2(wp.x, wp.y);
 
         switch (touchPhase)
         {
             case TouchPhase.Began:
-<<<<<<< HEAD
-=======
-                print(touchPosition);
-                print(worldPos);
-
->>>>>>> 264eee5 (Create Panel GameOver)
                 foreach (Collider2D c in Physics2D.OverlapPointAll(worldPos))
                 {
                     string n = c.gameObject.name;
                     if (n == "start_btn" || n == "rank_btn" || n == "rate_btn")
                     {
+                        // nhấn: hạ nút xuống 1 tí
                         c.transform.DOMoveY(c.transform.position.y - 0.03f, 0f);
                         nowPressBtn = c.gameObject;
                     }
@@ -88,6 +81,7 @@ public class StartMain : MonoBehaviour
             case TouchPhase.Ended:
                 if (nowPressBtn)
                 {
+                    // thả: trả nút về vị trí
                     nowPressBtn.transform.DOMoveY(nowPressBtn.transform.position.y + 0.03f, 0f);
 
                     foreach (Collider2D c in Physics2D.OverlapPointAll(worldPos))
@@ -96,24 +90,18 @@ public class StartMain : MonoBehaviour
                         {
                             if (nowPressBtn.name == "start_btn")
                                 OnPressStart();
+                            // nếu cần: else if (nowPressBtn.name == "rank_btn") ...; "rate_btn" ...
                         }
                     }
                     nowPressBtn = null;
                 }
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 264eee5 (Create Panel GameOver)
                 break;
         }
     }
 
     private void OnPressStart()
     {
-        
+        // Chuyển sang GameScene
         SceneManager.LoadScene("GameScene");
-
-        
     }
 }

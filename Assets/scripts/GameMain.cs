@@ -1,74 +1,122 @@
 ﻿using UnityEngine;
-using System.Collections;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public class GameMain : MonoBehaviour
 {
-
+    [Header("Refs")]
     public GameObject bird;
     public GameObject readyPic;
     public GameObject tipPic;
     public GameObject scoreMgr;
     public GameObject pipeSpawner;
-    //   public GameObject gameoverPic;
 
+    [Header("UI Buttons (optional)")]
+    public Button rank_btn; // nếu có dùng, gán onClick ở Inspector
 
     private bool gameStarted = false;
+    private BirdControl birdControl;
 
-    // Use this for initialization
+    void Awake()
+    {
+        if (bird != null) birdControl = bird.GetComponent<BirdControl>();
+    }
+
     void Start()
     {
-
+        gameStarted = false;
+        // Mặc định: để BirdControl tự lo input start game (theo code BirdControl bạn đã gửi)
+        // Nếu muốn GameMain bắt đầu bằng click đầu tiên, bật lại đoạn dưới và tắt logic ở BirdControl.
+        // (Giữ nguyên hiện tại: không xử lý input ở GameMain)
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        // Không xử lý input ở đây nữa - để BirdControl xử lý
-    }
+    // Không xử lý input ở đây nữa – tránh xung đột với BirdControl.Update()
 
-
+    /// <summary>Bắt đầu game theo lệnh ngoài (nếu muốn dùng nút Play, v.v.)</summary>
     public void StartGame()
     {
-        BirdControl control = bird.GetComponent<BirdControl>();
-        control.inGame = true;
-        control.JumpUp();
+        if (gameStarted) return;
+        gameStarted = true;
 
-        readyPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
-        tipPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
+        // Bật trạng thái inGame & nhảy lần đầu
+        if (birdControl == null && bird != null) birdControl = bird.GetComponent<BirdControl>();
+        if (birdControl != null)
+        {
+            birdControl.inGame = true;
+            birdControl.JumpUp();
+        }
 
-        pipeSpawner.GetComponent<PipeSpawner>().StartSpawning();
+        // Ẩn ready/tip
+        HideUI();
+
+        // Bắt đầu spawn ống
+        if (pipeSpawner != null)
+        {
+            var spawner = pipeSpawner.GetComponent<PipeSpawner>();
+            if (spawner != null) spawner.StartSpawning();
+        }
     }
-    
+
+    /// <summary>Ẩn UI hướng dẫn</summary>
     public void HideUI()
     {
         if (readyPic != null)
-            readyPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
+        {
+            var sr = readyPic.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.DOFade(0f, 0.2f);
+        }
         if (tipPic != null)
-            tipPic.GetComponent<SpriteRenderer>().material.DOFade(0f, 0.2f);
+        {
+            var sr = tipPic.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.DOFade(0f, 0.2f);
+        }
     }
-    public void GameOver()
-    {
-        // Hiện ảnh Game Over
-        //  gameoverPic.GetComponent<SpriteRenderer>().enabled = true;
 
-        // Ẩn điểm số và dừng ống bay (nếu muốn)
-        pipeSpawner.GetComponent<PipeSpawner>().GameOver();
-    }
-    
+    /// <summary>Hiện lại UI khi restart</summary>
     public void RestartGame()
     {
         gameStarted = false;
-        
-        // Hiện lại readyPic và tipPic
+
         if (readyPic != null)
         {
-            readyPic.GetComponent<SpriteRenderer>().material.DOFade(1f, 0.2f);
+            var sr = readyPic.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.DOFade(1f, 0.2f);
         }
         if (tipPic != null)
         {
-            tipPic.GetComponent<SpriteRenderer>().material.DOFade(1f, 0.2f);
+            var sr = tipPic.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.DOFade(1f, 0.2f);
         }
     }
 
+    /// <summary>Gọi khi game over (nếu muốn quản lý ở cấp GameMain). BirdControl đã tự gọi panel rồi.</summary>
+    public void GameOver()
+    {
+        // Dừng tạo ống
+        if (pipeSpawner != null)
+        {
+            var spawner = pipeSpawner.GetComponent<PipeSpawner>();
+            if (spawner != null) spawner.GameOver();
+        }
+
+        // Lấy điểm hiện tại
+        int finalScore = 0;
+        if (scoreMgr != null)
+        {
+            var sm = scoreMgr.GetComponent<ScoreMgr>();
+            if (sm != null) finalScore = sm.GetScore();
+        }
+
+        // Lưu leaderboard nếu có
+        var lb = FindObjectOfType<LeaderboardMgr>();
+        if (lb != null)
+        {
+            lb.AddScore("Player", finalScore);
+
+            var ui = FindObjectOfType<LeaderboardUI>();
+            if (ui != null) ui.ForceUpdate();
+        }
+
+        Debug.Log($"Game Over! Final Score = {finalScore}");
+    }
 }
